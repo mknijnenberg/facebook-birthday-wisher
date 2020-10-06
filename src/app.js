@@ -24,7 +24,9 @@ const Data = require("./lib/data");
         await data.BirthdaysToday();
 
         // Close the connection.
-        await data.disconnect();
+        if (process.env.DRIVER_CLOSE === 'true') {
+            await data.disconnect();
+        }
     } catch (error) {
         console.log('global error: ', error);
         await data.disconnect();
