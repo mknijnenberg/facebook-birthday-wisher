@@ -131,6 +131,19 @@ class Data {
                 await element.findElement(By.xpath(".//following-sibling::*/ul")).then(async (item) => {
                     console.log('first');
 
+                    let textarea;
+
+                    await item.findElement(By.xpath('.//textarea')).then(async () => {
+                        textarea = true;
+                    }).catch(() => {
+                        textarea = false;
+                    })
+
+                    if (!textarea) {
+                        console.log('no textarea found');
+                        return false;
+                    }
+
                     const name = await item.findElement(By.xpath('.//a[1]')).then(async (item) => {
                         const link = await item.getAttribute('href');
 
