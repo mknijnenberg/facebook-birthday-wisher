@@ -149,12 +149,18 @@ class Data {
                     console.log('second');
 
                     return await item.findElement(By.xpath('.//textarea')).then(async (textarea) => {
-                        console.log('setting text');
-
                         const sentence = this.generateCelebrations(name);
 
-                        await textarea.sendKeys(sentence);
-                    }).catch((error) => {
+                        console.log('writing the sentence: ', sentence);
+
+                        if (process.env.SUBMIT_VALUES === 'true') {
+                            await textarea.sendKeys(sentence, Key.RETURN);
+                        } else {
+                            await textarea.sendKeys(sentence);
+                        }
+
+                        return sentence;
+                    }).catch(() => {
                         console.log(`no textarea found for user: ${name}`);
                         return;
                     });
