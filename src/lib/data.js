@@ -5,11 +5,6 @@ const celebrations = require('./celebrations');
 class Data {
     constructor() {
         this.driver = null;
-
-        this.valueOne = 'Cal ' + (parseInt((new Date().getFullYear().toString().substr(-2)), 10) + 1);
-        this.valueTwo = 'Cal ' + (parseInt((new Date().getFullYear().toString().substr(-2)), 10) + 2);
-
-        this.results = [];
     }
 
     async connect(url) {
@@ -121,8 +116,8 @@ class Data {
         }
     }
 
-    async generateCelebrations(name) {
-        return celebrations.generate(name);
+    async generateCelebrations(name, link) {
+        return await celebrations.generate(name, link);
     }
 
     async BirthdaysToday() {
@@ -136,6 +131,7 @@ class Data {
                             await (async () => {
                                 const newItem = await items[index];
 
+                                let link;
                                 let textareaFound;
 
                                 await newItem.findElement(By.xpath('.//textarea')).then(async () => {
@@ -157,9 +153,7 @@ class Data {
                                 await console.log("Let's search for the name");
 
                                 const name = await newItem.findElement(By.xpath('.//a[1]')).then(async (item) => {
-                                    const link = await item.getAttribute('href');
-
-                                    console.log('link: ', link);
+                                    link = await item.getAttribute('href');
 
                                     const name = await this.goToPersonalWebsite(link);
 
@@ -173,7 +167,11 @@ class Data {
                                 await console.log("Fill in the textarea");
 
                                 const sentence = await newItem.findElement(By.xpath('.//textarea')).then(async (textarea) => {
-                                    const sentence = this.generateCelebrations(name);
+                                    const sentence = await this.generateCelebrations(name, link);
+
+                                    if (!sentence) {
+                                        return null;
+                                    }
 
                                     console.log('writing the sentence: ', sentence);
 
