@@ -128,61 +128,76 @@ class Data {
     async BirthdaysToday() {
         try {
             return await this.driver.findElement(By.id('birthdays_today_card')).then(async (element) => {
-                await element.findElement(By.xpath(".//following-sibling::*/ul")).then(async (item) => {
-                    console.log('first');
+                return await element.findElements(By.xpath(".//following-sibling::*/ul/li")).then(async (items) => {
+                    console.log('items length: ', items.length);
 
-                    let textarea;
+                    (async () => {
+                        for (let index = 0; index < items.length; index++) {
+                            await (async () => {
+                                const newItem = await items[index];
 
-                    await item.findElement(By.xpath('.//textarea')).then(async () => {
-                        textarea = true;
-                    }).catch(() => {
-                        textarea = false;
-                    })
+                                let textareaFound;
 
-                    if (!textarea) {
-                        console.log('no textarea found');
-                        return false;
-                    }
+                                await newItem.findElement(By.xpath('.//textarea')).then(async () => {
+                                    console.log('text')
+                                    textareaFound = true;
+                                }).catch(() => {
+                                    textareaFound = false;
+                                });
 
-                    const name = await item.findElement(By.xpath('.//a[1]')).then(async (item) => {
-                        const link = await item.getAttribute('href');
+                                console.log('textareaFound: ', textareaFound);
 
-                        console.log('link: ', link);
+                                if (!textareaFound) {
+                                    // Wait 5 seconds.
+                                    await this.wait(5000);
 
-                        const name = await this.goToPersonalWebsite(link);
+                                    return;
+                                }
 
-                        if (!name) {
-                            console.log('no name found');
-                            return null;
+                                await console.log("Let's search for the name");
+
+                                const name = await newItem.findElement(By.xpath('.//a[1]')).then(async (item) => {
+                                    const link = await item.getAttribute('href');
+
+                                    console.log('link: ', link);
+
+                                    const name = await this.goToPersonalWebsite(link);
+
+                                    if (!name) {
+                                        return null;
+                                    }
+
+                                    return name;
+                                });
+
+                                await console.log("Fill in the textarea");
+
+                                const sentence = await newItem.findElement(By.xpath('.//textarea')).then(async (textarea) => {
+                                    const sentence = this.generateCelebrations(name);
+
+                                    console.log('writing the sentence: ', sentence);
+
+                                    if (process.env.SUBMIT_VALUES === 'true') {
+                                        await textarea.sendKeys(sentence, Key.RETURN);
+                                    } else {
+                                        await textarea.sendKeys(sentence);
+                                    }
+
+                                    return sentence;
+                                });
+
+                                await console.log('filled in: ' + sentence)
+
+                                await this.wait(5000);
+                            })();
                         }
-
-                        return name;
-                    });
-
-                    console.log('second');
-
-                    return await item.findElement(By.xpath('.//textarea')).then(async (textarea) => {
-                        const sentence = this.generateCelebrations(name);
-
-                        console.log('writing the sentence: ', sentence);
-
-                        if (process.env.SUBMIT_VALUES === 'true') {
-                            await textarea.sendKeys(sentence, Key.RETURN);
-                        } else {
-                            await textarea.sendKeys(sentence);
-                        }
-
-                        return sentence;
-                    }).catch(() => {
-                        console.log(`no textarea found for user: ${name}`);
-                        return;
-                    });
+                    })();
                 }).catch((error) => {
                     console.log('no birthdays today.', error);
                     return null;
                 });
-            }).catch( () => {
-                console.log('no birthdays today.');
+            }).catch((error) => {
+                console.log('no birthdays today.', error);
                 return null;
             });
         } catch (error) {
