@@ -126,70 +126,68 @@ class Data {
                 return await element.findElements(By.xpath(".//following-sibling::*/ul/li")).then(async (items) => {
                     console.log('items length: ', items.length);
 
-                    (async () => {
-                        for (let index = 0; index < items.length; index++) {
-                            await (async () => {
-                                const newItem = await items[index];
+                    for (let index = 0; index < items.length; index++) {
+                        await (async () => {
+                            const newItem = await items[index];
 
-                                let link;
-                                let textareaFound;
+                            let link;
+                            let textareaFound;
 
-                                await newItem.findElement(By.xpath('.//textarea')).then(async () => {
-                                    console.log('text')
-                                    textareaFound = true;
-                                }).catch(() => {
-                                    textareaFound = false;
-                                });
+                            await newItem.findElement(By.xpath('.//textarea')).then(async () => {
+                                console.log('text')
+                                textareaFound = true;
+                            }).catch(() => {
+                                textareaFound = false;
+                            });
 
-                                console.log('textareaFound: ', textareaFound);
+                            console.log('textareaFound: ', textareaFound);
 
-                                if (!textareaFound) {
-                                    // Wait 5 seconds.
-                                    await this.wait(5000);
+                            if (!textareaFound) {
+                                // Wait 5 seconds.
+                                await this.wait(5000);
 
-                                    return;
+                                return;
+                            }
+
+                            await console.log("Let's search for the name");
+
+                            const name = await newItem.findElement(By.xpath('.//a[1]')).then(async (item) => {
+                                link = await item.getAttribute('href');
+
+                                const name = await this.goToPersonalWebsite(link);
+
+                                if (!name) {
+                                    return null;
                                 }
 
-                                await console.log("Let's search for the name");
+                                return name;
+                            });
 
-                                const name = await newItem.findElement(By.xpath('.//a[1]')).then(async (item) => {
-                                    link = await item.getAttribute('href');
+                            await console.log("Fill in the textarea");
 
-                                    const name = await this.goToPersonalWebsite(link);
+                            const sentence = await newItem.findElement(By.xpath('.//textarea')).then(async (textarea) => {
+                                const sentence = await this.generateCelebrations(name, link);
 
-                                    if (!name) {
-                                        return null;
-                                    }
+                                if (!sentence) {
+                                    return null;
+                                }
 
-                                    return name;
-                                });
+                                console.log('writing the sentence: ', sentence);
 
-                                await console.log("Fill in the textarea");
+                                if (process.env.SUBMIT_VALUES === 'true') {
+                                    await textarea.sendKeys(sentence, Key.RETURN);
+                                } else {
+                                    await textarea.sendKeys(sentence);
+                                }
 
-                                const sentence = await newItem.findElement(By.xpath('.//textarea')).then(async (textarea) => {
-                                    const sentence = await this.generateCelebrations(name, link);
+                                return sentence;
+                            });
 
-                                    if (!sentence) {
-                                        return null;
-                                    }
+                            await console.log('filled in: ' + sentence)
 
-                                    console.log('writing the sentence: ', sentence);
-
-                                    if (process.env.SUBMIT_VALUES === 'true') {
-                                        await textarea.sendKeys(sentence, Key.RETURN);
-                                    } else {
-                                        await textarea.sendKeys(sentence);
-                                    }
-
-                                    return sentence;
-                                });
-
-                                await console.log('filled in: ' + sentence)
-
-                                await this.wait(5000);
-                            })();
-                        }
-                    })();
+                            await this.wait(5000);
+                        })();
+                    }
                 }).catch((error) => {
                     console.log('no birthdays today.', error);
                     return null;
