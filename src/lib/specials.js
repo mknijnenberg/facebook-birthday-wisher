@@ -1,6 +1,7 @@
 const specials = () => {
     const list = {
         'linda.veeke': 'Gefeliciteerd meis!',
+        'leonie.vandermeer.7': 'Gefeliciteerd lieverd! 😘',
     };
 
     return {

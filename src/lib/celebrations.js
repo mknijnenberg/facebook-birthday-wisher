@@ -13,7 +13,7 @@ const celebrations = () => {
     const TYPE_SPECIAL = 4;
 
     const general = [
-        'van harte!',
+        'Van harte!',
         'Fijne dag vandaag!',
         'Gefeliciteerd!',
         'Gefeliciteerd, fijne dag vandaag!',
