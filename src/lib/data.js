@@ -86,12 +86,6 @@ class Data {
             // Switch to the new tab.
             await this.driver.switchTo().window(tabs[1]);
 
-            // Click on the info button.
-            await this.driver.findElement(By.xpath('//div[@id="fbTimelineHeadline"]//a[@data-tab-key="about"]')).click();
-
-            // wait 5 seconds.
-            await this.wait(5000);
-
             const text = await this.driver.findElement(By.xpath('//span[contains(text(),"Details over ")]')).getText();
 
             const splitted = await text.split('over ');
@@ -120,41 +114,37 @@ class Data {
         return await celebrations.generate(name, link);
     }
 
+    async logHTML(item) {
+        await item.getAttribute('innerHTML').then((html) => {
+            console.log('html: ', html);
+        });
+        return;
+    }
+
     async BirthdaysToday() {
         try {
-            return await this.driver.findElement(By.id('birthdays_today_card')).then(async (element) => {
-                return await element.findElements(By.xpath(".//following-sibling::*/ul/li")).then(async (items) => {
+            return await this.driver.findElement(By.xpath('//span[contains(text(), "Vandaag jarig")]')).then(async (element) => {
+                return await element.findElements(By.xpath('.//parent::*//parent::*//parent::*//parent::*//parent::*/div[2]/div/div')).then(async (items) => {
                     console.log('items length: ', items.length);
 
                     for (let index = 0; index < items.length; index++) {
                         await (async () => {
-                            const newItem = await items[index];
+                            const element = await items[index];
 
                             let link;
-                            let textareaFound;
 
-                            await newItem.findElement(By.xpath('.//textarea')).then(async () => {
-                                console.log('text')
-                                textareaFound = true;
-                            }).catch(() => {
-                                textareaFound = false;
-                            });
-
-                            console.log('textareaFound: ', textareaFound);
-
-                            if (!textareaFound) {
-                                // Wait 5 seconds.
-                                await this.wait(5000);
-
-                                return;
-                            }
+                            await element.findElement(By.xpath('.//br[@data-text="true"]')).then(async () => {
+                                console.log('textarea found');
 
                             await console.log("Let's search for the name");
 
-                            const name = await newItem.findElement(By.xpath('.//a[1]')).then(async (item) => {
+                            const name = await element.findElement(By.xpath('.//a[1]')).then(async (item) => {
                                 link = await item.getAttribute('href');
+                                const about = link + '/about';
 
-                                const name = await this.goToPersonalWebsite(link);
+                                console.log('link: ', about);
+
+                                const name = await this.goToPersonalWebsite(about);
 
                                 if (!name) {
                                     return null;
@@ -165,7 +155,7 @@ class Data {
 
                             await console.log("Fill in the textarea");
 
-                            const sentence = await newItem.findElement(By.xpath('.//textarea')).then(async (textarea) => {
+                            const sentence = await element.findElement(By.xpath('.//br[@data-text="true"]')).then(async (textarea) => {
                                 const sentence = await this.generateCelebrations(name, link);
 
                                 if (!sentence) {
@@ -184,6 +174,9 @@ class Data {
                             });
 
                             await console.log('filled in: ' + sentence)
+                            }).catch(async () => {
+                                console.log('textarea not found');
+                            });
 
                             await this.wait(5000);
                         })();
