@@ -1,10 +1,5 @@
 const Data = require("./lib/data");
 
-process.on('unhandledRejection', error => {
-    // Won't execute
-    console.log('unhandledRejection', error);
-});
-
 (async () => {
     try {
         const data = await new Data();

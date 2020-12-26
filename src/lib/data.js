@@ -123,7 +123,7 @@ class Data {
 
     async BirthdaysToday() {
         try {
-            return await this.driver.findElement(By.xpath('//span[contains(text(), "Vandaag jarig")]')).then(async (element) => {
+            return await this.driver.findElement(By.xpath('//span[text()="Vandaag jarig"]')).then(async (element) => {
                 return await element.findElements(By.xpath('.//parent::*//parent::*//parent::*//parent::*//parent::*/div[2]/div/div')).then(async (items) => {
                     console.log('items length: ', items.length);
 
