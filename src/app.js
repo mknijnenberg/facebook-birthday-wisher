@@ -2,6 +2,11 @@ const Data = require("./lib/data");
 
 (async () => {
     try {
+        if (process.env.APP_ACTIVATED !== 'true') {
+            console.log('application is deactivated');
+            return;
+        }
+
         const data = await new Data();
 
         await data.connect('https://www.facebook.com');
